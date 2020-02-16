@@ -1,5 +1,5 @@
 /**
- * Proxy to the Threads client for multiple stores.
+ * Proxy to the Threads client—handles using multiple stores.
  */
 class StoreProxy {
     
@@ -32,7 +32,7 @@ class StoreProxy {
     async use(name) {
         const store = await this.createStore(name);
         this._active = store;
-        return this._active;
+        return this.active();
     } 
 
     /**
@@ -45,7 +45,7 @@ class StoreProxy {
     }
 
     /**
-     * Create and return a new store with the given name if it doesn't exist.
+     * Create and return a new store with the given name—if it already exists, just return it.
      * @param {string} name — The name of the store.
      * @returns {Object} store — The object representing the store.
      */
@@ -79,11 +79,21 @@ class StoreProxy {
         return this._client.registerSchema(store.id, model, schema);
     }
 
+    /**
+     * Save a list of objects representing the given model for the active store.
+     * @param {string} model — The model name. 
+     * @param {Array} objects — The list of model objects. 
+     */
     saveModel(model, objects) {
         const store = this.active();
         return this._client.modelSave(store.id, model, objects);
     }
 
+    /**
+     * Create a list of objects representing the given model for the active store.
+     * @param {string} model — The model name. 
+     * @param {Array} objects — The list of model objects. 
+     */
     createModel(model, objects) {
         const store = this.active();
         return this._client.modelCreate(store.id, model, objects);
