@@ -13,8 +13,8 @@ function use(name) {
     return proxy.use(name);
 }
 
-function db() {
-    return proxy.active();
+function store() {
+    return proxy.store();
 }
 
 function register(model, schema) {
