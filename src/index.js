@@ -24,7 +24,7 @@ function say(msg) {
 
 /**
  * Checks the connection to the Textile API and exits the shell if the 
- * connection is refuseed.
+ * connection is refused.
  */
 function check_textile_api_connection() {
     const textile_url = new url.URL(threads.config.host); 
