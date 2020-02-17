@@ -1,1 +1,1 @@
-# textile-shell
+# thread-shell
