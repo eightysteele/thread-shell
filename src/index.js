@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-Object.assign(global, { WebSocket: require('websocket').w3cwebsocket });
-
 const repl = require('repl');
+const child_process = require('child_process');
+const url = require('url');
 const client = require("./client");
 const proxy = require("./proxy")
 
@@ -20,6 +20,23 @@ const colorize = (color, s) => `\x1b[${color}m${s}\x1b[0m`;
 function say(msg) {
     console.log(msg);
     local.displayPrompt();  // Cleans up display prompt.
+}
+
+/**
+ * Checks the connection to the Textile API and exits if connection refuseed.
+ */
+function check_textile_api_connection() {
+    const textile_url = new url.URL(threads.config.host); 
+    const hostname = textile_url.hostname;
+    const port = textile_url.port;
+    child_process.exec(`nc -vz ${hostname} ${port}`, (error, stdout, stderr) => {
+        if (error) {
+            var msg = colorize(colors.RED, 
+                `Shoot, unable to connect to the Threads API — ${stderr.trim()}`);
+            say(msg);   
+            process.exit(1);
+        }
+    });
 }
 
 /**
@@ -149,7 +166,10 @@ var local = repl.start( {
     useColors: true,
   });
 
-// Make thread functions available to the REPL context
+  check_textile_api_connection();
+
+// Make stuff available within the REPL context
+local.context.threads = threads;
 local.context.store = store;
 local.context.use = use;
 local.context.registerSchema = registerSchema;
