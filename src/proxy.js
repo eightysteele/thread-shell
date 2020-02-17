@@ -8,7 +8,7 @@ class StoreProxy {
      * Constructs a new StoreProxy.
      * @constructor
      * @param {Client} client — The Threads client. 
-     * @param {Map} stores — Maps store name to store object. 
+     * @param {Map} stores — Maps store id to store object. 
      */
     constructor(client, stores = new Map()) {
         this._client = client;
@@ -25,12 +25,12 @@ class StoreProxy {
     }
 
     /**
-     * Use the store by name by activating it, creating it if it doesn't exist.
-     * @param {string} name — The name of the store.
+     * Use the store.
+     * @param {string} id — The store id.
      * @returns {Object} store — The object representing the store.
      */
-    async use(name) {
-        const store = await this._getStore(name);
+     use(id) {
+        var store = this._stores.get(id);
         this._store_in_use = store;
         return store;
     } 
@@ -40,13 +40,10 @@ class StoreProxy {
      * @param {string} name — The name of the store.
      * @returns {Object} store — The object representing the store.
      */
-    async _getStore(name) {
-        var store = this._stores.get(name);
-        if (store === undefined) {
-            store = await this._client.newStore();  
-            store.name = name;
-            this._stores.set(name, store);
-        }
+    async newStore() {
+        var store = await this._client.newStore();  
+        this._stores.set(store.id, store);
+        this._store_in_use = store;
         return store;
     }
 }

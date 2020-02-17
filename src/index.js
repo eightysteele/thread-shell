@@ -73,7 +73,7 @@ function handler(promise) {
             }
         }),
         ((error) => {
-            var msg = colorize(colors.RED, `Hit a snag, try again: ${error}`);
+            var msg = colorize(colors.RED, `${error}`);
             say(msg);
         })
     );
@@ -87,12 +87,26 @@ function store() {
 }
 
 /**
- * Use the supplied store by name. Creates it if it doesn't exist.
+ * Creates a new store.
+ */
+function newStore() {
+    say('Creating new store...');
+    handler(stores.newStore());
+}
+
+/**
+ * Use an existing store by id.
  * @param {string} name — The store name. 
  */
-function use(name) {
-    say(`Switching to ${name}...`);
-    handler(stores.use(name));
+function use(id) {
+    say(`Switching stores...`);
+    var store = stores.use(id);
+    if (store === undefined) {
+        var msg = colorize(colors.RED, `Invalid store id: ${id}`);
+        say(msg);
+    } else {
+        say(store);
+    }
 }
 
 /**
@@ -190,6 +204,7 @@ check_textile_api_connection();
 // Make stuff available within the REPL context
 local.context.threads = threads;
 local.context.auth = auth;
+local.context.newStore = newStore;
 local.context.store = store;
 local.context.use = use;
 local.context.registerSchema = registerSchema;
@@ -202,3 +217,37 @@ local.context.modelFindByID = modelFindByID;
 local.context.readTransaction = readTransaction;
 local.context.writeTransaction = writeTransaction;
 local.context.listen = listen;
+local.context.playground = {
+    model: "Person",
+    schema: {
+        "$id": "https://example.com/person.schema.json",
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Person",
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "The person's first name."
+          },
+          "lastName": {
+            "type": "string",
+            "description": "The person's last name."
+          },
+          "age": {
+            "description": "Age in years which must be equal to or greater than zero.",
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      adam: {
+        "firstName": "Adam",
+        "lastName": "Doe",
+        "age": 21
+      },
+      eve: {
+        "firstName": "Eve",
+        "lastName": "Doe",
+        "age": 21
+      }
+}
