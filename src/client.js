@@ -9,13 +9,25 @@ const textile_threads_client = require("@textile/threads-client");
  * @param {string} project_token 
  * @param {*} user_id 
  */
-function getClient(project_token = undefined, user_id = undefined) {
-    if ((project_token == undefined) || (user_id == undefined)) {
-        return new textile_threads_client.Client();
-    } else if ((project_token != undefined) && (user_id != undefined)) {
-        const textile = new textile_api.API(project_token, user_id);
-        return new textile_threads_client.Client(textile.threadsConfig);
-    }
+async function getCloudClient(creds, cb) {
+    const textile = new textile_api.API(creds);
+    console.log('WHOA')
+    const client = new textile_threads_client.Client(textile.threadsConfig);
+    cb(client);
+    // textile.start().then(
+    //     (result) => {
+    //         console.log(threadsConfig);
+    //         const client = new textile_threads_client.Client(textile.threadsConfig);
+    //     cb(client);
+    // }),
+    // ((error) => {
+    //     console.log(`OOPS ${error}`);
+    // });
 }
 
-exports.getClient = getClient;
+function getLocalClient() {
+    return new textile_threads_client.Client();
+}
+
+exports.getLocalClient = getLocalClient;
+exports.getCloudClient = getCloudClient;

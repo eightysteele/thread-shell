@@ -6,15 +6,15 @@ const url = require('url');
 const client = require("./client");
 const proxy = require("./proxy")
 
-const threads = client.getClient();
-const stores = new proxy.StoreProxy(threads);
+var threads = client.getLocalClient();
+var stores = new proxy.StoreProxy(threads);
 
-// Some helpers for coloring REPL messages.
+// For coloring REPL messages
 const colors = { RED: "31", GREEN: "32", YELLOW: "33", BLUE: "34", MAGENTA: "35" };
 const colorize = (color, s) => `\x1b[${color}m${s}\x1b[0m`;
 
 /**
- * A little helper function that "says" the supplied message in the REPL.
+ * Logs the supplied message to the REPL.
  * @param {string} msg — The message to print.
  */
 function say(msg) {
@@ -41,8 +41,26 @@ function check_textile_api_connection() {
 }
 
 /**
- * A little helper function that handles the promises coming back from the 
- * js-threads-client API.
+ * 
+ * @param {Object} creds — Object with `token` and `deviceId` keys. 
+ */
+function auth(creds = null) {
+    say('Authenticating...');
+    if (creds === null) {
+        handle_auth(client.getLocalClient());
+    } else {
+        client.getCloudClient(creds, handle_auth);
+    }
+}
+
+function handle_auth(threads) {
+    stores = new proxy.StoreProxy(threads);
+    local.context.threads = threads;
+    check_textile_api_connection();
+}
+
+/**
+ * Handles the promises coming back from the js-threads-client API.
  * @param {Promise} promise — The promise. 
  */
 function handler(promise) {
@@ -110,7 +128,7 @@ function modelDelete(name, object_ids) {
 }
 
 /**
- * Proxy to js-threads-client.modelFin().
+ * Proxy to js-threads-client.modelFind().
  */
 function modelFind(name, query) {
     say(`Finding ${name} models by query...`);
@@ -167,10 +185,11 @@ var local = repl.start( {
     useColors: true,
   });
 
-  check_textile_api_connection();
+check_textile_api_connection();
 
 // Make stuff available within the REPL context
 local.context.threads = threads;
+local.context.auth = auth;
 local.context.store = store;
 local.context.use = use;
 local.context.registerSchema = registerSchema;
