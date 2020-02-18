@@ -35,8 +35,12 @@ class StoreProxy {
         return store;
     } 
 
+    /**
+     * Retun a list of store IDs.
+     */
     list() {
-        return Array.from(this._stores, ([x]) => x);    }
+        return Array.from(this._stores, ([x]) => x);
+    }
 
     /**
      * Proxy to js-threads-client.newStore().
