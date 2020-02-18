@@ -161,6 +161,10 @@ store.listen(name, object_id)
     Listen to updates on the supplied object id.
 playground
     Playground object with a model name, schema, and objects to play with.
+Query
+    The js-threads-client Query object for building store queries.
+Where
+    The js-threads-client Where object for building store queries.
 `
     say(msg);
 }
