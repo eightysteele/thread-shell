@@ -97,7 +97,7 @@ function newStore() {
 
 /**
  * Use an existing store by id.
- * @param {string} name — The store name. 
+ * @param {string} id — The store id. 
  */
 function use(id) {
     const stores = local.context.store.stores;
@@ -177,7 +177,7 @@ class Store {
     }
 
     /**
-     * Returns the active store.
+     * Returns the active store id.
      */
     id() {
         return this.stores.store().id;

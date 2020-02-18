@@ -1,6 +1,6 @@
 /**
  * Proxy to the Threads client—the main idea is that it handles using multiple
- * stores via the use() method, where each store is identified by a name.
+ * stores via the use() method.
  */
 class StoreProxy {
     
@@ -40,7 +40,6 @@ class StoreProxy {
 
     /**
      * Proxy to js-threads-client.newStore().
-     * @param {string} name — The name of the store.
      * @returns {Object} store — The object representing the store.
      */
     async newStore() {
