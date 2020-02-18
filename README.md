@@ -17,9 +17,7 @@ $ npm test
 
 ## Usage
 
-### Local development
-
-First fire up the Textile thread daemon in a terminal window:
+For local development, first fire up the Textile thread daemon in a terminal window:
 
 ```bash
 $ git clone https://github.com/textileio/go-threads.git
@@ -37,6 +35,14 @@ $ ./shell
 threads> auth()
 Authenticating...
 threads> Connected to Textile API: http://127.0.0.1:6007
+```
+
+You can also connect to the Textile cloud if you have credentials. I still need to test this with some valid creds haha. :)
+
+```bash
+threads> auth({token: "MY_TOKEN", deviceID: "MY_DEVICE_ID"})
+Authenticating...
+threads> Connected to Textile API: http://cloud.textile.io
 ```
 
 From there, take a look at the `help()` menu. Here's an example that creates 2 stores and switches between them:
