@@ -123,53 +123,6 @@ function showStores() {
 }
 
 /**
- * Shows help message.
- */
-function help() {
-    var msg = `
-auth(creds)     
-    Authenticate to Textile cloud with credentials.
-newStore()      
-    Create a new store.
-showStores()    
-    List all stores.
-use(id)         
-    Use the store (makes the store active).
-store
-    The store that's active—you make stores active with use(id)
-store.id()      
-    Get the store's id.
-store.registerSchema(name, schema)
-    Register the name of a model to the supplied schema.
-store.modelCreate(name, objects)
-    Create new objects for the supplied model name.
-store.modelSave(name, objects)
-    Save changes to existing objects for the supplied model name.
-store.modelDelete(name, object_ids)
-    Delete existing objects by ID for the supplied model name.
-store.modelFind(name, query)
-    Find objects for the supplied model name and query object.
-store.modelHas(name, object_ids)
-    Check if a model has specific objects.
-store.modelFindByID(name, object_id)
-    Find objects by ID for the supplied model name and list of IDs.
-store.readTransaction(name)
-    Create a new read-only transaction object.
-store.writeTransaction(name) 
-    Create a new writable transaction object.
-store.listen(name, object_id)
-    Listen to updates on the supplied object id.
-playground
-    Playground object with a model name, schema, and objects to play with.
-Query
-    The js-threads-client Query object for building store queries.
-Where
-    The js-threads-client Where object for building store queries.
-`
-    say(msg);
-}
-
-/**
  * Proxies js-threads-client, but keeps track of multiple stores.
  */
 class Store {
@@ -321,5 +274,53 @@ local.context.playground = {
         "firstName": "Eve",
         "lastName": "Doe",
         "age": 21
-      }
+      },
+      query: new tc.Where('firstName').eq('Adam')
+}
+
+/**
+ * Shows help message.
+ */
+function help() {
+    var msg = `
+auth(creds)     
+    Authenticate to Textile cloud with credentials.
+newStore()      
+    Create a new store.
+showStores()    
+    List all stores.
+use(id)         
+    Use the store (makes the store active).
+store
+    The store that's active—you make stores active with use(id)
+store.id()      
+    Get the store's id.
+store.registerSchema(name, schema)
+    Register the name of a model to the supplied schema.
+store.modelCreate(name, objects)
+    Create new objects for the supplied model name.
+store.modelSave(name, objects)
+    Save changes to existing objects for the supplied model name.
+store.modelDelete(name, object_ids)
+    Delete existing objects by ID for the supplied model name.
+store.modelFind(name, query)
+    Find objects for the supplied model name and query object.
+store.modelHas(name, object_ids)
+    Check if a model has specific objects.
+store.modelFindByID(name, object_id)
+    Find objects by ID for the supplied model name and list of IDs.
+store.readTransaction(name)
+    Create a new read-only transaction object.
+store.writeTransaction(name) 
+    Create a new writable transaction object.
+store.listen(name, object_id)
+    Listen to updates on the supplied object id.
+playground
+    Playground object with a model name, schema, and objects to play with.
+Query
+    The js-threads-client Query object for building store queries.
+Where
+    The js-threads-client Where object for building store queries.
+`
+    say(msg);
 }
