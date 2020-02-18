@@ -36,12 +36,14 @@ function check_textile_api_connection() {
                 `Shoot, unable to connect to the Threads API — ${stderr.trim()}`);
             say(msg);   
             process.exit(1);
+        } else {
+            say(`Connected to Textile API: ${threads.config.host}`);
         }
     });
 }
 
 /**
- * 
+ * TODO
  * @param {Object} creds — Object with `token` and `deviceId` keys. 
  */
 function auth(creds = null) {
@@ -53,6 +55,10 @@ function auth(creds = null) {
     }
 }
 
+/**
+ * TODO
+ * @param {Client} threads 
+ */
 function handle_auth(threads) {
     stores = new proxy.StoreProxy(threads);
     local.context.threads = threads;
@@ -61,13 +67,15 @@ function handle_auth(threads) {
 
 /**
  * Handles the promises coming back from the js-threads-client API.
- * @param {Promise} promise — The promise. 
+ * @param {Promise} promise — The promise.
+ * @param {Function} cb — Optional callback for the results. 
  */
-function handler(promise) {
+function handler(promise, cb = () => {}) {
     promise.then(
         ((result) => {
             if (result) {
                 say(result);
+                cb(result);
             } else {
                 say(`Success`);
             }
@@ -77,13 +85,6 @@ function handler(promise) {
             say(msg);
         })
     );
-}
-
-/**
- * Returns the active store.
- */
-function store() {
-    return stores.store();
 }
 
 /**
@@ -110,88 +111,152 @@ function use(id) {
 }
 
 /**
- * Proxy to js-threads-client.registerSchema().
+ * Shows a list of store IDs.
  */
-function registerSchema(name, schema) {
-    say(`Registering ${name} model schema...`);
-    handler(threads.registerSchema(store().id, name, schema));
+function showStores() {
+    say(stores.list());
 }
 
 /**
- * Proxy to js-threads-client.modelCreate().
+ * Shows help message.
  */
-function modelCreate(name, objects) {
-    say(`Creating ${name} model objects...`);
-    handler(threads.modelCreate(store().id, name, objects));
+function help() {
+    var msg = `
+auth(creds)     
+    Authenticate to Textile cloud with credentials.
+newStore()      
+    Create a new store.
+showStores()    
+    List all stores.
+use(id)         
+    Use the store (makes the store active).
+store
+    The store that's active—you make stores active with use(id)
+store.id()      
+    Get the store's id.
+store.registerSchema(name, schema)
+    Register the name of a model to the supplied schema.
+store.modelCreate(name, objects)
+    Create new objects for the supplied model name.
+store.modelSave(name, objects)
+    Save changes to existing objects for the supplied model name.
+store.modelDelete(name, object_ids)
+    Delete existing objects by ID for the supplied model name.
+store.modelFind(name, query)
+    Find objects for the supplied model name and query object.
+store.modelHas(name, object_ids)
+    Check if a model has specific objects.
+store.modelFindByID(name, object_id)
+    Find objects by ID for the supplied model name and list of IDs.
+store.readTransaction(name)
+    Create a new read-only transaction object.
+store.writeTransaction(name) 
+    Create a new writable transaction object.
+store.listen(name, object_id)
+    Listen to updates on the supplied object id.
+playground
+    Playground object with a model name, schema, and objects to play with.
+`
+    say(msg);
 }
 
-/**
- * Proxy to js-threads-client.modelSave().
- */
-function modelSave(name, objects) {
-    say(`Saving ${name} model objects...`);
-    handler(threads.modelSave(store().id, name, objects));
+class Store {
+
+    constructor() {
+    }
+
+    /**
+     * Returns the active store.
+     */
+    id() {
+        return stores.store().id;
+    }
+
+    /**
+     * Proxy to js-threads-client.registerSchema().
+     */
+    registerSchema(name, schema) {
+        say(`Registering ${name} model schema...`);
+        handler(threads.registerSchema(this.id(), name, schema));
+    }
+
+    /**
+     * Proxy to js-threads-client.modelCreate().
+     */
+    modelCreate(name, objects) {
+        say(`Creating ${name} model objects...`);
+        handler(threads.modelCreate(id(), name, objects));
+    }
+
+    /**
+     * Proxy to js-threads-client.modelSave().
+     */
+    modelSave(name, objects) {
+        say(`Saving ${name} model objects...`);
+        handler(threads.modelSave(id(), name, objects));
+    }
+
+    /**
+     * Proxy to js-threads-client.modelDelete().
+     */
+    modelDelete(name, object_ids) {
+        say(`Deleting ${name} models by IDs...`);
+        handler(threads.modelDelete(id(), name, object_ids));
+    }
+
+    /**
+     * Proxy to js-threads-client.modelFind().
+     */
+    modelFind(name, query) {
+        say(`Finding ${name} models by query...`);
+        handler(threads.modelFind(id(), name, query));
+    }
+
+    /**
+     * Proxy to js-threads-client.modelHas().
+     */
+    modelHas(name, object_ids) {
+        say(`Checking if ${name} models exist by IDs...`);
+        handler(threads.modelHas(id(), name, object_ids));
+    }
+
+    /**
+     * Proxy to js-threads-client.modelFindByID().
+     */
+    modelFindByID(name, object_id) {
+        say(`Finding ${name} model object by ID...`);
+        handler(threads.modelFindByID(id(), name, object_id));
+    }
+
+    /**
+     * Proxy to js-threads-client.readTransaction().
+     */
+    readTransaction(name) {
+        say(`Starting read-only transaction for ${name}...`);
+        return threads.readTransaction(id(), name);
+    }
+
+    /**
+     * Proxy to js-threads-client.writeTransaction().
+     */
+    writeTransaction(name) {
+        say(`Starting writeable transaction for ${name}...`);
+        return threads.writeTransaction(id(), name);
+    }
+
+    /**
+     * Proxy to js-threads-client.listen().
+     */
+    listen(name, object_id) {
+        say(`Listening to ${name}:${object_id}...`);
+        threads.listen(id(), name, object_id, ((reply) => {
+            say(reply);
+        }));
+    }
 }
 
-/**
- * Proxy to js-threads-client.modelDelete().
- */
-function modelDelete(name, object_ids) {
-    say(`Deleting ${name} models by IDs...`);
-    handler(threads.modelDelete(store().id, name, object_ids));
-}
+const store = new Store();
 
-/**
- * Proxy to js-threads-client.modelFind().
- */
-function modelFind(name, query) {
-    say(`Finding ${name} models by query...`);
-    handler(threads.modelFind(store().id, name, query));
-}
-
-/**
- * Proxy to js-threads-client.modelHas().
- */
-function modelHas(name, object_ids) {
-    say(`Checking if ${name} models exist by IDs...`);
-    handler(threads.modelHas(store().id, name, object_ids));
-}
-
-/**
- * Proxy to js-threads-client.modelFindByID().
- */
-function modelFindByID(name, object_id) {
-    say(`Finding ${name} model object by ID...`);
-    handler(threads.modelFindByID(store().id, name, object_id));
-}
-
-/**
- * Proxy to js-threads-client.readTransaction().
- */
-function readTransaction(name) {
-    say(`Starting read-only transaction for ${name}...`);
-    return threads.readTransaction(store().id, name);
-}
-
-/**
- * Proxy to js-threads-client.writeTransaction().
- */
-function writeTransaction(name) {
-    say(`Starting writeable transaction for ${name}...`);
-    return threads.writeTransaction(store().id, name);
-}
-
-/**
- * Proxy to js-threads-client.listen().
- */
-function listen(name, object_id) {
-    say(`Listening to ${name}:${object_id}...`);
-    threads.listen(store().id, name, object_id, ((reply) => {
-        say(reply);
-    }));
-}
-
-// Start the REPL
 var local = repl.start( {
     prompt: 'threads> ',
     replMode: repl.REPL_MODE_STRICT,
@@ -207,16 +272,8 @@ local.context.auth = auth;
 local.context.newStore = newStore;
 local.context.store = store;
 local.context.use = use;
-local.context.registerSchema = registerSchema;
-local.context.modelCreate = modelCreate;
-local.context.modelSave = modelSave;
-local.context.modelDelete = modelDelete;
-local.context.modelHas = modelHas;
-local.context.modelFind = modelFind;
-local.context.modelFindByID = modelFindByID;
-local.context.readTransaction = readTransaction;
-local.context.writeTransaction = writeTransaction;
-local.context.listen = listen;
+local.context.showStores = showStores;
+local.context.help = help;
 local.context.playground = {
     model: "Person",
     schema: {

@@ -35,6 +35,9 @@ class StoreProxy {
         return store;
     } 
 
+    list() {
+        return Array.from(this._stores, ([x]) => x);    }
+
     /**
      * Proxy to js-threads-client.newStore().
      * @param {string} name — The name of the store.
