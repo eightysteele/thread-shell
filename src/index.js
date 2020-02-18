@@ -5,6 +5,8 @@ const child_process = require('child_process');
 const url = require('url');
 const client = require("./client");
 const proxy = require("./proxy")
+const tc = require("@textile/threads-client");
+
 
 // For coloring REPL messages
 const colors = { RED: "31", GREEN: "32", YELLOW: "33", BLUE: "34", MAGENTA: "35" };
@@ -61,6 +63,7 @@ function handle_auth(threads) {
     const stores = new proxy.StoreProxy(threads);
     const store = new Store(stores);
     local.context.store = store;
+    local.context.threads = threads;
     check_textile_api_connection(threads);
 }
 
@@ -276,6 +279,8 @@ var local = repl.start( {
 
 // Make stuff available within the REPL context
 local.context.auth = auth;
+local.context.Query = tc.Query;
+local.context.Where = tc.Where;
 local.context.newStore = newStore;
 local.context.use = use;
 local.context.showStores = showStores;
