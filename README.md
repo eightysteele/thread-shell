@@ -66,6 +66,10 @@ Switching stores...
 threads> { id: '76f6d8c0-b739-4d5e-8669-c18d92f95bfc' }
 ```
 
+A longer demo:
+
+![shell-wip](https://user-images.githubusercontent.com/462255/74763995-b57f8900-5235-11ea-8743-ea3a46c0a1d8.gif)
+
 
 ## TODOs
 - [ ] investigate `Error: Response closed without grpc-status (Headers only)`
