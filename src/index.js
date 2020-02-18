@@ -6,15 +6,12 @@ const url = require('url');
 const client = require("./client");
 const proxy = require("./proxy")
 
-var threads = client.getLocalClient();
-var stores = new proxy.StoreProxy(threads);
-
 // For coloring REPL messages
 const colors = { RED: "31", GREEN: "32", YELLOW: "33", BLUE: "34", MAGENTA: "35" };
 const colorize = (color, s) => `\x1b[${color}m${s}\x1b[0m`;
 
 /**
- * Logs the supplied message to the REPL.
+ * Helper that logs the supplied message to the REPL.
  * @param {string} msg — The message to print.
  */
 function say(msg) {
@@ -23,13 +20,14 @@ function say(msg) {
 }
 
 /**
- * Checks the connection to the Textile API and exits the shell if the 
- * connection is refused.
+ * Helper that checks the connection to the Textile API and will exit the shell 
+ * if the connection is refused.
  */
-function check_textile_api_connection() {
+function check_textile_api_connection(threads) {
     const textile_url = new url.URL(threads.config.host); 
     const hostname = textile_url.hostname;
     const port = textile_url.port;
+    // TODO: is `nc` reliable cross-platform?
     child_process.exec(`nc -vz ${hostname} ${port}`, (error, stdout, stderr) => {
         if (error) {
             var msg = colorize(colors.RED, 
@@ -43,7 +41,7 @@ function check_textile_api_connection() {
 }
 
 /**
- * TODO
+ * Authenticates to the Textile API.
  * @param {Object} creds — Object with `token` and `deviceId` keys. 
  */
 function auth(creds = null) {
@@ -56,17 +54,18 @@ function auth(creds = null) {
 }
 
 /**
- * TODO
- * @param {Client} threads 
+ * Wires up the supplied threads client to the REPL.
+ * @param {Client} threads — The Threads client
  */
 function handle_auth(threads) {
-    stores = new proxy.StoreProxy(threads);
-    local.context.threads = threads;
-    check_textile_api_connection();
+    const stores = new proxy.StoreProxy(threads);
+    const store = new Store(stores);
+    local.context.store = store;
+    check_textile_api_connection(threads);
 }
 
 /**
- * Handles the promises coming back from the js-threads-client API.
+ * Generic handler for promises coming back from the js-threads-client API.
  * @param {Promise} promise — The promise.
  * @param {Function} cb — Optional callback for the results. 
  */
@@ -88,9 +87,10 @@ function handler(promise, cb = () => {}) {
 }
 
 /**
- * Creates a new store.
+ * Create a new store.
  */
 function newStore() {
+    const stores = local.context.store.stores;
     say('Creating new store...');
     handler(stores.newStore());
 }
@@ -100,6 +100,7 @@ function newStore() {
  * @param {string} name — The store name. 
  */
 function use(id) {
+    const stores = local.context.store.stores;
     say(`Switching stores...`);
     var store = stores.use(id);
     if (store === undefined) {
@@ -114,6 +115,7 @@ function use(id) {
  * Shows a list of store IDs.
  */
 function showStores() {
+    const stores = local.context.store.stores;
     say(stores.list());
 }
 
@@ -160,16 +162,25 @@ playground
     say(msg);
 }
 
+/**
+ * Proxies js-threads-client, but keeps track of multiple stores.
+ */
 class Store {
 
-    constructor() {
+    /**
+     * Constructs a new Store with the supplied store proxy object.
+     * @param {StoreProxy} stores — The store proxy. 
+     */
+    constructor(stores) {
+        this.stores = stores;
+        this.threads = stores._client;
     }
 
     /**
      * Returns the active store.
      */
     id() {
-        return stores.store().id;
+        return this.stores.store().id;
     }
 
     /**
@@ -177,7 +188,7 @@ class Store {
      */
     registerSchema(name, schema) {
         say(`Registering ${name} model schema...`);
-        handler(threads.registerSchema(this.id(), name, schema));
+        handler(this.threads.registerSchema(this.id(), name, schema));
     }
 
     /**
@@ -185,7 +196,7 @@ class Store {
      */
     modelCreate(name, objects) {
         say(`Creating ${name} model objects...`);
-        handler(threads.modelCreate(id(), name, objects));
+        handler(this.threads.modelCreate(this.id(), name, objects));
     }
 
     /**
@@ -193,7 +204,7 @@ class Store {
      */
     modelSave(name, objects) {
         say(`Saving ${name} model objects...`);
-        handler(threads.modelSave(id(), name, objects));
+        handler(this.threads.modelSave(this.id(), name, objects));
     }
 
     /**
@@ -201,7 +212,7 @@ class Store {
      */
     modelDelete(name, object_ids) {
         say(`Deleting ${name} models by IDs...`);
-        handler(threads.modelDelete(id(), name, object_ids));
+        handler(this.threads.modelDelete(this.id(), name, object_ids));
     }
 
     /**
@@ -209,7 +220,7 @@ class Store {
      */
     modelFind(name, query) {
         say(`Finding ${name} models by query...`);
-        handler(threads.modelFind(id(), name, query));
+        handler(this.threads.modelFind(this.id(), name, query));
     }
 
     /**
@@ -217,7 +228,7 @@ class Store {
      */
     modelHas(name, object_ids) {
         say(`Checking if ${name} models exist by IDs...`);
-        handler(threads.modelHas(id(), name, object_ids));
+        handler(this.threads.modelHas(this.id(), name, object_ids));
     }
 
     /**
@@ -225,7 +236,7 @@ class Store {
      */
     modelFindByID(name, object_id) {
         say(`Finding ${name} model object by ID...`);
-        handler(threads.modelFindByID(id(), name, object_id));
+        handler(this.threads.modelFindByID(this.id(), name, object_id));
     }
 
     /**
@@ -233,7 +244,7 @@ class Store {
      */
     readTransaction(name) {
         say(`Starting read-only transaction for ${name}...`);
-        return threads.readTransaction(id(), name);
+        return this.threads.readTransaction(this.id(), name);
     }
 
     /**
@@ -241,7 +252,7 @@ class Store {
      */
     writeTransaction(name) {
         say(`Starting writeable transaction for ${name}...`);
-        return threads.writeTransaction(id(), name);
+        return this.threads.writeTransaction(this.id(), name);
     }
 
     /**
@@ -249,14 +260,13 @@ class Store {
      */
     listen(name, object_id) {
         say(`Listening to ${name}:${object_id}...`);
-        threads.listen(id(), name, object_id, ((reply) => {
+        this.threads.listen(this.id(), name, object_id, ((reply) => {
             say(reply);
         }));
     }
 }
 
-const store = new Store();
-
+// Start the REPL
 var local = repl.start( {
     prompt: 'threads> ',
     replMode: repl.REPL_MODE_STRICT,
@@ -264,13 +274,9 @@ var local = repl.start( {
     useColors: true,
   });
 
-check_textile_api_connection();
-
 // Make stuff available within the REPL context
-local.context.threads = threads;
 local.context.auth = auth;
 local.context.newStore = newStore;
-local.context.store = store;
 local.context.use = use;
 local.context.showStores = showStores;
 local.context.help = help;
