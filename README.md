@@ -66,7 +66,6 @@ Switching stores...
 threads> { id: '76f6d8c0-b739-4d5e-8669-c18d92f95bfc' }
 ```
 
-
 ## TODOs
 - [ ] investigate `Error: Response closed without grpc-status (Headers only)`
 - [ ] test `getCloudClient(creds, cb)` with real credentials
