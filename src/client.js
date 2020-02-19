@@ -12,7 +12,7 @@ const textile_threads_client = require("@textile/threads-client");
 async function getCloudClient(creds, cb) {
     // TODO: Test this against real creds.
     const textile = new textile_api.API(creds);
-    textile.threadsConfig.transport = improbable_transport.NodeHttpTransport()
+    textile.threadsConfig.transport = improbable_transport.NodeHttpTransport();
     textile.start().then(
         (result) => {
             const client = new textile_threads_client.Client(textile.threadsConfig);
@@ -29,7 +29,9 @@ async function getCloudClient(creds, cb) {
  * Returns a client for use with a local Textile daemon.
  */
 function getLocalClient() {
-    return new textile_threads_client.Client();
+    const client = new textile_threads_client.Client();
+    client.config.transport = improbable_transport.NodeHttpTransport();
+    return client;
 }
 
 exports.getLocalClient = getLocalClient;
