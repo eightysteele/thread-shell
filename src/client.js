@@ -1,5 +1,6 @@
 Object.assign(global, { WebSocket: require('websocket').w3cwebsocket });
 
+const improbable_transport = require("@improbable-eng/grpc-web-node-http-transport");
 const textile_api = require("@textile/textile");
 const textile_threads_client = require("@textile/threads-client");
 
@@ -11,6 +12,7 @@ const textile_threads_client = require("@textile/threads-client");
 async function getCloudClient(creds, cb) {
     // TODO: Test this against real creds.
     const textile = new textile_api.API(creds);
+    textile.threadsConfig.transport = improbable_transport.NodeHttpTransport()
     textile.start().then(
         (result) => {
             const client = new textile_threads_client.Client(textile.threadsConfig);
