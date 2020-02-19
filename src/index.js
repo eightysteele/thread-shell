@@ -60,11 +60,12 @@ function auth(creds = null) {
  * @param {Client} threads — The Threads client
  */
 function handle_auth(threads) {
+    say("Authenticated!")
     const stores = new proxy.StoreProxy(threads);
     const store = new Store(stores);
     local.context.store = store;
     local.context.threads = threads;
-    check_textile_api_connection(threads);
+    // check_textile_api_connection(threads);
 }
 
 /**

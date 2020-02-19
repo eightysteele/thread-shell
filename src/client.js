@@ -14,6 +14,8 @@ async function getCloudClient(creds, cb) {
     textile.start().then(
         (result) => {
             const client = new textile_threads_client.Client(textile.threadsConfig);
+            client.config.threadsPort = 6447;
+            client.config.host = 'https://api.textile.io:6447';
             cb(client);
         }),
         ((error) => {

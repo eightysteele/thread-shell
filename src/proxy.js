@@ -47,7 +47,7 @@ class StoreProxy {
      * @returns {Object} store — The object representing the store.
      */
     async newStore() {
-        var store = await this._client.newStore();  
+        var store = await this._client.newStore(); 
         this._stores.set(store.id, store);
         this._store_in_use = store;
         return store;
