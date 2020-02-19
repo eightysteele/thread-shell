@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "@improbable-eng/grpc-web-node-http-transport": "^0.12.0",
-    "@textile/textile": "0.0.6",
+    "@textile/textile": "0.0.7",
     "@textile/threads-client": "^0.2.6",
     "chai": "^4.2.0",
     "mocha": "^7.0.1",
