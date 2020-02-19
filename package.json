@@ -9,6 +9,7 @@
   "author": "eightysteele",
   "license": "MIT",
   "dependencies": {
+    "@improbable-eng/grpc-web-node-http-transport": "^0.12.0",
     "@textile/textile": "0.0.6",
     "@textile/threads-client": "^0.2.6",
     "chai": "^4.2.0",
