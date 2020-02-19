@@ -29,10 +29,13 @@ async function getCloudClient(creds, cb) {
  * Returns a client for use with a local Textile daemon.
  */
 function getLocalClient() {
-    const client = new textile_threads_client.Client();
-    client.config.transport = improbable_transport.NodeHttpTransport();
+    const client = new textile_threads_client.Client({
+        transport: improbable_transport.NodeHttpTransport()
+    });
     return client;
 }
 
 exports.getLocalClient = getLocalClient;
 exports.getCloudClient = getCloudClient;
+exports.Query = textile_threads_client.Query;
+exports.Where = textile_threads_client.Where;
