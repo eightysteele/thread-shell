@@ -28,10 +28,10 @@ function auth(creds = null) {
     }
 }
 
-function handle_auth(c) {
+function handle_auth(client) {
     say("Authenticated!")
-    pool = new database.Pool(c);
-    validate_api_connection(c);
+    pool = new database.Pool(client);
+    validate_api_connection(client);
 }
 
 function validate_api_connection(c) {
@@ -72,8 +72,8 @@ class Collection {
         this.c = c;
     }
 
-    createEntity(objects) {
-        this.c.createEntity(objects, 
+    create(entities) {
+        this.c.create(entities, 
             ((result) => {
                 say(`Entities created in collection ${this.c.name}`);
             }),
@@ -81,6 +81,75 @@ class Collection {
                 say(error, true);
             })
         );
+    }
+
+    save(entities) {
+        this.c.save(entities, 
+            ((result) => {
+                say(`Entities saved to collection ${this.c.name}`);
+            }),
+            ((error) => {
+                say(error, true);
+            })
+        );
+    }
+
+    delete(ids) {
+        this.c.delete(ids, 
+            ((result) => {
+                say(`Entities deleted from collection ${this.c.name}`);
+            }),
+            ((error) => {
+                say(error, true);
+            })
+        );
+    }
+
+    has(ids) {
+        this.c.has(ids, 
+            ((result) => {
+                say(result);
+            }),
+            ((error) => {
+                say(error, true);
+            })
+        );
+    }
+
+    find(query) {
+        this.c.find(query, 
+            ((result) => {
+                say(result);
+            }),
+            ((error) => {
+                say(error, true);
+            })
+        );
+    }
+
+    get(id) {
+        this.c.get(id, 
+            ((result) => {
+                say(result);
+            }),
+            ((error) => {
+                say(error, true);
+            })
+        );
+    }
+
+    readTransaction() {
+        return this.c.readTransaction();
+    }
+
+    writeTransaction() {
+        return this.c.writeTransaction();
+    }
+
+    listen(id) {
+        this.c.listen(id, ((action) => {
+            say(action);
+        }));
     }
 }
 
@@ -96,6 +165,16 @@ class Database {
                 say(`Collection ${name} created.`);
                 const collection = new Collection(result);
                 this[name] = collection;
+            }),
+            ((error) => {
+                say(error, true);
+            }))
+    }
+
+    getLinks() {
+        this.db.getLinks(
+            ((result) => {
+                say(results);
             }),
             ((error) => {
                 say(error, true);
@@ -160,40 +239,36 @@ local.context.playground = {
  */
 function help() {
     var msg = `
-auth(creds)     
-    Authenticate to Textile cloud with credentials.
-newStore()      
-    Create a new store.
-showStores()    
-    List all stores.
-use(id)         
-    Use the store (makes the store active).
-store
-    The store that's active—you make stores active with use(id)
-store.id()      
-    Get the store's id.
-store.registerSchema(name, schema)
-    Register the name of a model to the supplied schema.
-store.modelCreate(name, objects)
-    Create new objects for the supplied model name.
-store.modelSave(name, objects)
-    Save changes to existing objects for the supplied model name.
-store.modelDelete(name, object_ids)
-    Delete existing objects by ID for the supplied model name.
-store.modelFind(name, query)
-    Find objects for the supplied model name and query object.
-store.modelHas(name, object_ids)
-    Check if a model has specific objects.
-store.modelFindByID(name, object_id)
-    Find objects by ID for the supplied model name and list of IDs.
-store.readTransaction(name)
-    Create a new read-only transaction object.
-store.writeTransaction(name) 
-    Create a new writable transaction object.
-store.listen(name, object_id)
-    Listen to updates on the supplied object id.
-playground
-    Playground object with a model name, schema, and objects to play with.
+auth(creds?: Object)     
+    Authenticate to Textile cloud with credentials, or to the local daemon.
+use(name: String)
+    Use the database by name creating it if it doesn't exist.
+show()
+    Show a list of databases.
+db
+    The active database in use.
+db.createCollection(name: String, schema: Object)
+    Create a new collection in the database.
+db.getLinks()
+    Get links for the database.
+db.collectionName.create(entities: Array)
+    Create new entities in the database collection.
+db.collectionName.delete(ids: Array)
+    Delete entities from the database collection.
+db.collectionName.find(query: Where | Query)
+    Find entities in the database collection.
+db.collectionName.get(id: String)
+    Get an entity by id from the database collection.
+db.collectionName.has(ids: Array)
+    Return true if the database collection has all the entities.
+db.collectionName.listen(id: String)
+    Listen to entity updates in the database collection.
+db.collectionName.readTransaction()
+    Start and return a read-only transaction.
+db.collectionName.save(entities: Array)
+    Save entities in the database collection.
+db.collectionName.writeTransaction()
+    Start and return a write-only transaction.
 Query
     The js-threads-client Query object for building store queries.
 Where
@@ -204,3 +279,4 @@ Where
 
 exports.use = use;
 exports.pool = pool;
+exports.help = help;

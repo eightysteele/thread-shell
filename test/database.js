@@ -23,7 +23,7 @@ describe("Pool", function() {
                     expect(pool.active()).equals(db);
                 }),
                 ((error) => {
-                    console.log(`FUCK ${error}`);
+                    console.log(error);
                 }));
         });
     });
@@ -42,20 +42,7 @@ describe("DB", function() {
                     expect(c.id).equals('c');
                 }),
                 ((error) => {
-                    console.log(`FUCK ${error}`);
-                }));
-        });
-    });
-    describe("createEntity", function() {
-        it("creates new entities", async () => {
-            const client = new mocks.MockClient();
-            const db = new database.DB(client, 'name', 'id');
-            db.createEntity('c', [{name: 'boom'}],
-                ((result) => {
-                    expect(result).to.not.be.undefined;
-                }),
-                ((error) => {
-                    console.log(`FUCK ${error}`);
+                    console.log(error);
                 }));
         });
     });
