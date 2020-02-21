@@ -1,16 +1,24 @@
 #!/usr/bin/env node
 
+/**
+ * @fileoverview This file is the entry point to the Thread shell. It's 
+ * powered mainly by the `repl` package: https://nodejs.org/api/repl.html
+ */
+
 const repl = require('repl');
 const child_process = require('child_process');
 const url = require('url');
 const client = require("./client");
 const database = require("./database");
-
 var pool = null;
-
 const colors = { RED: "31", GREEN: "32", YELLOW: "33", BLUE: "34", MAGENTA: "35" };
 const colorize = (color, s) => `\x1b[${color}m${s}\x1b[0m`;
 
+/**
+ * Helper function that prints to the console.
+ * @param {string} msg — The message to print.
+ * @param {boolean} error — True if the message is an error.
+ */
 function say(msg, error = false) {
     if (error) {
         msg = colorize(colors.RED, `${msg}`);
@@ -19,6 +27,11 @@ function say(msg, error = false) {
     local.displayPrompt();
 }
 
+/**
+ * User facing function to authenticate to Textile. If credentials are null, 
+ * connect to the local daemon. Otherwise authenticate to Textile cloud.
+ * @param {Object} creds — The credentials object with `token` and `deviceId` keys.
+ */
 function auth(creds = null) {
     say('Authenticating...');
     if (creds === null) {
@@ -28,14 +41,23 @@ function auth(creds = null) {
     }
 }
 
+/**
+ * Handle a successfull authentication attempt by updating the pool and validating 
+ * the connection.
+ * @param {@textile/threads-client.Client} client — The Textile client.
+ */
 function handle_auth(client) {
     say("Authenticated!")
     pool = new database.Pool(client);
     validate_api_connection(client);
 }
 
-function validate_api_connection(c) {
-    const textile_url = new url.URL(c.config.host); 
+/**
+ * Validate the API connection, existing the shell if it's unreachable.
+ * @param {@textile/threads-client.Client} c — The threads client.
+ */
+function validate_api_connection(threadClient) {
+    const textile_url = new url.URL(threadClient.config.host); 
     const hostname = textile_url.hostname;
     const port = textile_url.port;
     // TODO: is `nc` reliable cross-platform?
@@ -46,11 +68,16 @@ function validate_api_connection(c) {
             say(msg);   
             process.exit(1);
         } else {
-            say(`Connected to Textile API: ${c.config.host}`);
+            say(`Connected to Textile API: ${threadClient.config.host}`);
         }
     });
 }
 
+/**
+ * Use a database by name and assign it to the `db` instance in the shell. The 
+ * database will be created if it doesn't already exist.
+ * @param {string} name — The name of the database.
+ */
 function use(name) {
     pool.use(name, 
         ((db) => {
@@ -62,16 +89,32 @@ function use(name) {
     );
 }
 
+/**
+ * Show a list of databases in the pool.
+ */
 function show() {
     say(pool.getDbs());
 }
 
+/**
+ * User facing class that wraps and dispatches to an instance of a 
+ * database.Collection. Instances of this class are attached to the
+ * `db` object in the shell. For example, if you create a collection
+ * named `myCollection` it will be available as `db.myCollection`.
+ */
 class Collection {
     
+    /**
+     * @param {*} c — an instance of database.Collection.
+     */
     constructor(c) {
         this.c = c;
     }
 
+    /**
+     * Create new entities in the collection.
+     * @param {Array} entities — The array of entity objects.
+     */
     create(entities) {
         this.c.create(entities, 
             ((result) => {
@@ -83,6 +126,10 @@ class Collection {
         );
     }
 
+    /**
+     * Save changes to existing entities in the collection.
+     * @param {Array} entities — The array of entity objects.
+     */
     save(entities) {
         this.c.save(entities, 
             ((result) => {
@@ -94,6 +141,10 @@ class Collection {
         );
     }
 
+    /**
+     * Delete existing entities from the collection.
+     * @param {Array} ids — The array of entity IDs.
+     */
     delete(ids) {
         this.c.delete(ids, 
             ((result) => {
@@ -105,6 +156,10 @@ class Collection {
         );
     }
 
+    /**
+     * Return true if the collection has all the entities.
+     * @param {Array} ids — The array of entity IDs.
+     */
     has(ids) {
         this.c.has(ids, 
             ((result) => {
@@ -116,6 +171,10 @@ class Collection {
         );
     }
 
+    /**
+     * Find entities in the collection.
+     * @param {@textile/threads-client.Query} query — The query object. 
+     */
     find(query) {
         this.c.find(query, 
             ((result) => {
@@ -127,6 +186,10 @@ class Collection {
         );
     }
 
+    /**
+     * Get an entity.
+     * @param {string} id — The entity ID.
+     */
     get(id) {
         this.c.get(id, 
             ((result) => {
@@ -138,14 +201,26 @@ class Collection {
         );
     }
 
+    /**
+     * Start and return a read-only transaction.
+     * @returns {@textile/threads-client.ReadTransaction} — The transaction object.
+     */
     readTransaction() {
         return this.c.readTransaction();
     }
 
+    /**
+     * Start and return a write-only transaction.
+     * @returns {@textile/threads-client.WriteTransaction} — The transaction object.
+     */
     writeTransaction() {
         return this.c.writeTransaction();
     }
 
+    /**
+     * Listen to actions on an entity.
+     * @param {string} id — The entity ID.
+     */
     listen(id) {
         this.c.listen(id, ((action) => {
             say(action);
@@ -153,12 +228,24 @@ class Collection {
     }
 }
 
+/**
+ * User facing class what wraps and dispatches to an instance of a
+ * database.DB. It's available in the shell as the `db` object.
+ */
 class Database {
 
+    /**
+     * @param {database.DB} db — The database instance.
+     */
     constructor(db) {
         this.db = db;
     }
 
+    /**
+     * Create a new database collection.
+     * @param {string} name — The collection name.
+     * @param {Object} schema — The collection schema.
+     */
     createCollection(name, schema) {
         this.db.createCollection(name, schema, 
             ((result) => {
@@ -171,6 +258,9 @@ class Database {
             }))
     }
 
+    /**
+     * Get the database links.
+     */
     getLinks() {
         this.db.getLinks(
             ((result) => {

@@ -1,4 +1,17 @@
+/**
+ * @fileoverview This file contains abstractions for a database (DB), a 
+ * collection (Collection), and a pool (Pool) of databases. These abstractions
+ * wrap and dispatch to a @textile/threads-client.Client and contain no business
+ * logic. The pool maintains multiple database instances by name.
+ * @package database
+ */
 
+/**
+ * General handler for promises coming back from the client.
+ * @param {Promise} promise — The promise.
+ * @param {function} success — The success callback.
+ * @param {function} failure — The failure callback.
+ */
 function handler(promise, success, failure) {
     promise.then(
         ((result) => {
@@ -10,7 +23,15 @@ function handler(promise, success, failure) {
     );
 }
 
+/**
+ * Represents a single collection and has a reference to its database.
+ */
 class Collection {
+    /**
+     * @param {DB} db — The DB this collection belongs to.
+     * @param {string} name — The collection name.
+     * @param {Object} schema — The collection schema.
+     */
     constructor(db, name, schema){
         this.db = db;
         this.name = name;
@@ -61,7 +82,7 @@ class Collection {
 }
 
 /**
- * Represents a single database.
+ * Represents a single database and has a reference to the Textile cient.
  */
 class DB {
     constructor(client, name, id, collections = new Map()) {
@@ -100,7 +121,8 @@ class DB {
 }
 
 /**
- * Pool of multiple databases.
+ * Represents a pool of databases identified by name and has a reference to a
+ * Textile client.
  */
 class Pool {
     
@@ -109,6 +131,13 @@ class Pool {
         this.dbs = new Map();
     }
 
+
+    /**
+     * Use a database, creating one if it doesn't exist.
+     * @param {string} name — The name of the database.
+     * @param {function} success — The success callback.
+     * @param {function} failure — The failure callback.
+     */
     use(name, success, failure) {
         var db = this.dbs.get(name);
         if (db) {

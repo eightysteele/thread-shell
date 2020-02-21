@@ -1,3 +1,8 @@
+/**
+ * @fileoverview This file contains functions for getting a Textile client.
+ * @package client
+ */
+
 Object.assign(global, { WebSocket: require('websocket').w3cwebsocket });
 
 const improbable_transport = require("@improbable-eng/grpc-web-node-http-transport");
@@ -10,18 +15,15 @@ const textile_threads_client = require("@textile/threads-client");
  * @param {function} cb — The callback. 
  */
 async function getCloudClient(creds, cb) {
-    // TODO: Test this against real creds.
     const textile = new textile_api.API(creds);
     textile.threadsConfig.transport = improbable_transport.NodeHttpTransport();
     textile.start().then(
         (result) => {
             const client = new textile_threads_client.Client(textile.threadsConfig);
-            client.config.threadsPort = 6447;
-            client.config.host = 'https://api.textile.io:6447';
             cb(client);
         }),
         ((error) => {
-            console.log(`TODO ${error}`);
+            console.log(`Auth — ${error}`);
     });
 }
 
