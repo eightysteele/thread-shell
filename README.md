@@ -81,12 +81,9 @@ threads> {
 ```
 
 ## TODOs
-- [ ] investigate `Error: Response closed without grpc-status (Headers only)`
-- [ ] test `getCloudClient(creds, cb)` with real credentials
 - [ ] check if `nc` is cross platform 
 - [ ] make repl context properties read-only by default (so that users can't accidentally over-write)
 - [ ] handle REPL context reloads
-- [ ] it's unclear if/when `start` needs to be called: https://github.com/textileio/js-threads-client/blob/master/src/index.ts#L101
 
 ## API nits
 * maybe add a human readable `name` to store objects
