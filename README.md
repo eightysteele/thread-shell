@@ -37,7 +37,7 @@ Authenticating...
 threads> Connected to Textile API: http://127.0.0.1:6007
 ```
 
-You can also connect to the Textile cloud if you have credentials. I still need to test this with some valid creds haha. :)
+You can also connect to the Textile cloud if you have credentials:
 
 ```bash
 threads> auth({token: "MY_TOKEN", deviceID: "MY_DEVICE_ID"})
@@ -45,25 +45,39 @@ Authenticating...
 threads> Connected to Textile API: http://cloud.textile.io
 ```
 
-From there, take a look at the `help()` menu. Here's an example that creates 2 stores and switches between them:
+From there, take a look at the `help()` menu. Here's a short demo:
 
 ```bash
-threads> newStore()
-Creating new store...
-threads> { id: '76f6d8c0-b739-4d5e-8669-c18d92f95bfc' }
-threads> newStore()
-Creating new store...
-threads> { id: '11bc75cd-7f50-40b9-9709-6f219deb7f4c' }
-threads> store.id()
-'11bc75cd-7f50-40b9-9709-6f219deb7f4c'
-threads> showStores()
-[
-  '76f6d8c0-b739-4d5e-8669-c18d92f95bfc',
-  '11bc75cd-7f50-40b9-9709-6f219deb7f4c'
-]
-threads> use('76f6d8c0-b739-4d5e-8669-c18d92f95bfc')
-Switching stores...
-threads> { id: '76f6d8c0-b739-4d5e-8669-c18d92f95bfc' }
+$ ./shell
+threads> auth()
+Authenticating...
+threads> Authenticated!
+threads> Connected to Textile API: http://127.0.0.1:6007
+threads> use('test')
+threads> db
+Database {
+  db: DB {
+    client: Client { config: [Config] },
+    name: 'test',
+    id: '5753d7de-6e71-4202-a38c-e69078437790',
+    collections: Map {}
+  }
+}
+threads> db.createCollection('person', playground.schema)
+threads> Collection person created.
+threads> db.person.create([playground.adam, playground.eve])
+threads> Entities created in collection person
+threads> db.person.find(new Where('firstName').eq('Adam'))
+threads> {
+  entitiesList: [
+    {
+      firstName: 'Adam',
+      lastName: 'Doe',
+      age: 21,
+      ID: 'b75187f8-f721-4112-bba5-7cd538d5a5ac'
+    }
+  ]
+}
 ```
 
 ## TODOs
