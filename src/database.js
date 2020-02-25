@@ -108,7 +108,7 @@ class DB {
     }
 
     getLinks(success, failure) {
-        const promise = this.client.getStoreLinks(this.id);
+        const promise = this.client.getStoreLink(this.id);
         promise.then(
             ((result) => {
                 success(result);
