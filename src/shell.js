@@ -264,7 +264,7 @@ class Database {
     getLinks() {
         this.db.getLinks(
             ((result) => {
-                say(results);
+                say(result);
             }),
             ((error) => {
                 say(error, true);
