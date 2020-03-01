@@ -13,6 +13,18 @@ const database = require("./database");
 var pool = null;
 const colors = { RED: "31", GREEN: "32", YELLOW: "33", BLUE: "34", MAGENTA: "35" };
 const colorize = (color, s) => `\x1b[${color}m${s}\x1b[0m`;
+const commandLineArgs = require('command-line-args')
+
+/**
+ * Parse the command line options.
+ */
+const optionDefinitions = [
+    { name: 'project_token', type: String },
+    { name: 'project_db_name', type: String },
+    { name: 'project_db_id', type: String },
+]
+const options = commandLineArgs(optionDefinitions)
+console.log(options);
 
 /**
  * Helper function that prints to the console.
@@ -50,6 +62,12 @@ function handle_auth(client) {
     say("Authenticated!")
     pool = new database.Pool(client);
     validate_api_connection(client);
+    local.context.client = client;
+
+    //@todo clear out options after this
+    if (options['project_db_id']) {
+        use(options['project_db_name'], id = options['project_db_id']);
+    }
 }
 
 /**
@@ -78,8 +96,9 @@ function validate_api_connection(threadClient) {
  * database will be created if it doesn't already exist.
  * @param {string} name — The name of the database.
  */
-function use(name) {
+function use(name, id = null) {
     pool.use(name, 
+        id,
         ((db) => {
             local.context.db = new Database(db);
         }),
@@ -279,6 +298,14 @@ var local = repl.start( {
     ignoreUndefined: true,
     useColors: true,
   });
+
+// Authenticate if token is in the command line options
+if (options['project_token']) {
+    const creds = {
+        token: options['project_token'], 
+        deviceId: 'fa92b33d-1c17-4f65-b232-acce460b6ad9'}
+    auth(creds);
+}  
 
 // Make stuff available within the REPL context
 local.context.db = null;

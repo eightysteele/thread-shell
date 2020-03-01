@@ -132,19 +132,32 @@ class Pool {
     }
 
 
+
     /**
      * Use a database, creating one if it doesn't exist, and starting it.
      * @param {string} name — The name of the database.
      * @param {function} success — The success callback.
      * @param {function} failure — The failure callback.
      */
-    use(name, success, failure) {
+    use(name, id = null, success, failure) {
         const client = this.client;
         var db = this.dbs.get(name);
         var newDbId = null;
         if (db) {
             this.dbs.set('active', db);
             success(db);
+        } else if (id) {
+            client.start(id).then(
+                ((result) => {
+                    var db = new DB(this.client, name, id);
+                    this.dbs.set(name, db);
+                    this.dbs.set('active', db);
+                    success(db);
+                }),
+                ((error) => {
+                    failure(error);
+                })
+            );
         } else {
             client.newStore().then(
                 ((result) => {

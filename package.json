@@ -13,6 +13,7 @@
     "@textile/textile": "0.0.7",
     "@textile/threads-client": "^0.2.6",
     "chai": "^4.2.0",
+    "command-line-args": "^5.1.1",
     "mocha": "^7.0.1",
     "repl": "^0.1.3",
     "websocket": "^1.0.31"
